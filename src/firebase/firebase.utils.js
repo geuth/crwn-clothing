@@ -1,11 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore';
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+import { getFirestore, doc, getDoc, setDoc } from 'firebase/firestore';
  
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+
 const firebaseConfig = {
     apiKey: "AIzaSyBsWnteQfOOfk5yW4j4dkOW_VT7jAWppiU",
     authDomain: "crwn-db-cddbc.firebaseapp.com",
@@ -16,7 +13,30 @@ const firebaseConfig = {
     measurementId: "G-TY78QXW9R5"
 };
  
-// Initialize Firebase
+export const createUserProfileDocument = async(userAuth, additionalData)=>{
+
+    if(!userAuth) return;
+
+    const userRef = doc(firestore, `users/${userAuth.uid}`);
+    const snapShot = await getDoc(userRef);
+    if(!snapShot.exists){
+        const {displayName, email} = userAuth;
+        const createdAt = new Date()
+        try{
+            await setDoc(userRef,{
+                displayName,
+                email,
+                createdAt,
+                ...additionalData,
+            })
+        }catch(error){
+            console.log("Error creating user", error.message);
+
+        }
+    }
+    return userRef;
+}
+
 initializeApp(firebaseConfig);
  
 export const auth = getAuth();
